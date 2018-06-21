@@ -267,8 +267,7 @@ class JsonRpc(object):
         for topic in request.params:
             if not topic:
                 continue
-            if topic in request.topics:
-                request.subscriptions.add(topic)
+            request.subscriptions.add(topic)
             if topic not in self.topic_clients_map:
                 self.topic_clients_map[topic] = {id(request.http_request): request.http_request}
             elif id(request.http_request) not in self.topic_clients_map[topic]:
@@ -286,6 +285,8 @@ class JsonRpc(object):
             if topic in request.subscriptions:
                 request.subscriptions.remove(topic)
             del self.topic_clients_map[topic][id(request.http_request)]
+            if not len(self.topic_clients_map[topic]):
+                del self.topic_clients_map[topic]
 
         return list(request.subscriptions)
 
