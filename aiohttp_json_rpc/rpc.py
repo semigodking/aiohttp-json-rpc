@@ -307,7 +307,6 @@ class JsonRpc(object):
         if type(topic) is not str:
             raise ValueError
 
-        self.state[topic] = data
         notification = None
         for client in self.filter(topic):
             try:
