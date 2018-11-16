@@ -1,5 +1,4 @@
 from collections import namedtuple
-import json
 
 from .exceptions import (
     error_code_to_exception,
@@ -7,6 +6,16 @@ from .exceptions import (
     RpcParseError,
     RpcError
 )
+
+try:
+    from pandas._libs.json import dumps as _dumps
+    from pandas._libs.json import loads
+
+    def dumps(*args, **kwargs):
+        kwargs['iso_dates'] = True
+        return _dumps(*args, **kwargs)
+except ImportError:
+    from json import loads, dumps
 
 JSONRPC = '2.0'
 JsonRpcMsg = namedtuple('JsonRpcMsg', ['type', 'data'])
@@ -60,7 +69,7 @@ def decode_msg(raw_msg):
     """
 
     try:
-        msg_data = json.loads(raw_msg)
+        msg_data = loads(raw_msg)
 
     except ValueError:
         raise RpcParseError
@@ -146,7 +155,7 @@ def encode_request(method, id=None, params=None):
     if params is not None:
         msg['params'] = params
 
-    return json.dumps(msg)
+    return dumps(msg)
 
 
 def encode_notification(method, params=None):
@@ -160,7 +169,7 @@ def encode_result(id, result):
         'result': result
     }
 
-    return json.dumps(msg)
+    return dumps(msg)
 
 
 def encode_error(error, id=None):
@@ -184,7 +193,7 @@ def encode_error(error, id=None):
     if error.data is not None:
         msg['error']['data'] = error.data
 
-    return json.dumps(msg)
+    return dumps(msg)
 
 
 def decode_error(msg: JsonRpcMsg):
